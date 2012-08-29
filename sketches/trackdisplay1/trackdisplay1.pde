@@ -1,6 +1,10 @@
-/*
- 
-*/
+/*------------------------------------------------KitchenTrackDisplay
+ * this is a quick one. All it does is clear the screen on the 
+ * serial lcd and then send all characters recieved by the usb port
+ * to the display. (currently a sparkfun serial lcd)
+ * 
+ * (c) 2012 don@suspectdevices.com
+ ------------------------------------------------------------------*/
 
 void setup() {
     // Set up the built-in LED pin as an output:
