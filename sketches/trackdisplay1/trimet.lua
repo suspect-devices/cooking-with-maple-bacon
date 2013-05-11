@@ -1,3 +1,9 @@
+-- trimet transit tracker 
+-- 7536 = 75 southbound @42nd and sumner
+-- 11503 = MAX Yellowline southbound @Killingsworth and Interstate.
+-- (C) 2013 Donald Delmar Davis, Suspect Devices.
+-- THIS IS FREE SOFTWARE, released under Modified BSD (look it up)
+
 http = require("socket.http")
 
 mycontent=""
@@ -5,7 +11,7 @@ checktime=0
 estimates={}
 scheduled={}
 
-io.output('/dev/ttyACM0')
+io.output('/dev/ttyATH0')
 
 -- still trying to figure this out. 
 -- from http://lua-users.org/wiki/FiltersSourcesAndSinks
@@ -21,7 +27,7 @@ function mysink(chunk,src_err)
      return true 
   else 
     mycontent=chunk
-    print(mycontent)
+    -- print(mycontent)
 
     checktime=string.match(mycontent,'queryTime="(%d+)')
     print (os.date("%d %b %X", string.sub(checktime,1,10)))
@@ -67,7 +73,7 @@ end
 
 while true do
   http.request{
-    url="http://developer.trimet.org/ws/V1/arrivals?locIDs=7536&appID=EC36A740E55BB5A803BB2602B";
+    url="http://developer.trimet.org/ws/V1/arrivals?locIDs=11503&appID=EC36A740E55BB5A803BB2602B";
     sink=mysink;
   }
   io.flush()
