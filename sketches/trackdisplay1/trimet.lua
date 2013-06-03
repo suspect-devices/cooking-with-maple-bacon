@@ -6,16 +6,23 @@
 
 http = require("socket.http")
 
-mycontent=""
 checktime=0
 estimates={}
 scheduled={}
 
-io.output('/dev/ttyATH0')
+if io.popen("uname -m"):read("*l") == 'i386' then
+  io_output = io.stdout
+else
+  io_output = '/dev/ttyATH0'
+end
+
+io.output(io_output)
 
 -- still trying to figure this out. 
 -- from http://lua-users.org/wiki/FiltersSourcesAndSinks
 function mysink(chunk,src_err)
+  local mycontent=""
+
   if chunk == nil then
     if src_err then
       -- source reports an error
@@ -44,7 +51,7 @@ function mysink(chunk,src_err)
       arrival=string.sub(mycontent,i,string.find(mycontent,">",j))
       --print(arrival)
       status=string.match(arrival,'status="(%a+)')
-      --print(status)
+      print(status)
       local thetime=0
       local marker="*"
       if string.find(status,'estimated') then
@@ -53,9 +60,14 @@ function mysink(chunk,src_err)
       else
         thetime=string.match(arrival,'scheduled="(%d+)')
       end
+      --irb(main):011:0> Time.at('1368871373735'[0,10].to_i)
+      --=> 2013-05-18 03:02:53 -0700
       local timerep=os.date("%c", string.sub(thetime,1,10) )
-      print(status.."("..thetime..")="..timerep  )
-      io.write(" ".. marker .. os.date("%I:%M", string.sub(thetime,1,10) ) .." ")
+      print(os.date("%c", os.difftime(os.time(), (string.sub(thetime,1,10)))))
+      --print(timerep)
+      print("----------------------")
+      --print(status.."("..thetime..")="..timerep  )
+      --io.write(" ".. marker .. os.date("%I:%M", string.sub(thetime,1,10) ) .." ")
     end
     return true
   end
