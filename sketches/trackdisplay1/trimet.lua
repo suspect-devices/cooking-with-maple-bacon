@@ -10,7 +10,11 @@ checktime=0
 estimates={}
 scheduled={}
 
-if io.popen("uname -m"):read("*l") == 'i386' then
+-- I want to do a list comprehension here
+current_platform = io.popen("uname -m"):read("*l")
+if current_platform == 'i386' then
+  io_output = io.stdout
+elseif current_platform == 'x86_64' then
   io_output = io.stdout
 else
   io_output = '/dev/ttyATH0'
@@ -51,23 +55,32 @@ function mysink(chunk,src_err)
       arrival=string.sub(mycontent,i,string.find(mycontent,">",j))
       --print(arrival)
       status=string.match(arrival,'status="(%a+)')
-      print(status)
+      --print(status)
       local thetime=0
-      local marker="*"
+      local marker="~"
+      local minutes_till = ''
       if string.find(status,'estimated') then
-        marker="!"
+        marker=""
         thetime=string.match(arrival,'estimated="(%d+)')
       else
         thetime=string.match(arrival,'scheduled="(%d+)')
       end
-      --irb(main):011:0> Time.at('1368871373735'[0,10].to_i)
-      --=> 2013-05-18 03:02:53 -0700
-      local timerep=os.date("%c", string.sub(thetime,1,10) )
-      print(os.date("%c", os.difftime(os.time(), (string.sub(thetime,1,10)))))
-      --print(timerep)
-      print("----------------------")
-      --print(status.."("..thetime..")="..timerep  )
-      --io.write(" ".. marker .. os.date("%I:%M", string.sub(thetime,1,10) ) .." ")
+      thetime = string.sub(thetime,1,10)
+      local timerep=os.date("%c", thetime )
+      print(status.."("..thetime..")="..timerep  )
+
+      local delta = (os.difftime(thetime, os.time()) / 60)
+      print("delta: "..delta)
+      if delta > 60 then
+        marker = ''
+        minutes_till = '(z_z)'
+      elseif delta < 1 then
+        minutes_till = 'Due'
+      else
+        minutes_till = string.format("%.0f min", delta)
+      end
+      print("minutes_till: "..minutes_till)
+      io.write(marker .. minutes_till .." ")
     end
     return true
   end
