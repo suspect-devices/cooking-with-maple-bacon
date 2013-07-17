@@ -53,9 +53,7 @@ function mysink(chunk,src_err)
         i=i+1;
       end
       arrival=string.sub(mycontent,i,string.find(mycontent,">",j))
-      --print(arrival)
       status=string.match(arrival,'status="(%a+)')
-      --print(status)
       local thetime=0
       local marker="~"
       local minutes_till = ''
