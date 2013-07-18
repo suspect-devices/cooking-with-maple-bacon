@@ -6,16 +6,27 @@
 
 http = require("socket.http")
 
-mycontent=""
 checktime=0
 estimates={}
 scheduled={}
 
-io.output('/dev/ttyATH0')
+-- I want to do a list comprehension here
+current_platform = io.popen("uname -m"):read("*l")
+if current_platform == 'i386' then
+  io_output = io.stdout
+elseif current_platform == 'x86_64' then
+  io_output = io.stdout
+else
+  io_output = '/dev/ttyATH0'
+end
+
+io.output(io_output)
 
 -- still trying to figure this out. 
 -- from http://lua-users.org/wiki/FiltersSourcesAndSinks
 function mysink(chunk,src_err)
+  local mycontent=""
+
   if chunk == nil then
     if src_err then
       -- source reports an error
@@ -42,20 +53,32 @@ function mysink(chunk,src_err)
         i=i+1;
       end
       arrival=string.sub(mycontent,i,string.find(mycontent,">",j))
-      --print(arrival)
       status=string.match(arrival,'status="(%a+)')
-      --print(status)
       local thetime=0
-      local marker="*"
+      local marker="~"
+      local minutes_till = ''
       if string.find(status,'estimated') then
-        marker="!"
+        marker=""
         thetime=string.match(arrival,'estimated="(%d+)')
       else
         thetime=string.match(arrival,'scheduled="(%d+)')
       end
-      local timerep=os.date("%c", string.sub(thetime,1,10) )
+      thetime = string.sub(thetime,1,10)
+      local timerep=os.date("%c", thetime )
       print(status.."("..thetime..")="..timerep  )
-      io.write(" ".. marker .. os.date("%I:%M", string.sub(thetime,1,10) ) .." ")
+
+      local delta = (os.difftime(thetime, os.time()) / 60)
+      print("delta: "..delta)
+      if delta > 60 then
+        marker = ''
+        minutes_till = '(z_z)'
+      elseif delta < 1 then
+        minutes_till = 'Due'
+      else
+        minutes_till = string.format("%.0f min", delta)
+      end
+      print("minutes_till: "..minutes_till)
+      io.write(marker .. minutes_till .." ")
     end
     return true
   end
